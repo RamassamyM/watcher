@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#need to install task_spooler : sudo apt-get install task-spooler
+command=$1
+args=$2
+./log "******************"
+./log $0 "Enqueue : $command $args"
+./log $0 "Queue job id : $(tsp ${command} $args)"
+./log $0 "Finished : $command $args"
+./log "******************"
