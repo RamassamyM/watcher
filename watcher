@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# this program watch a source dir directory then copy any dir or file created
+# or updated to a targetdir respecting directories tree
+# so it will add all new changes to a target dir in smilar directory
+# directories and files configuration
+
+# create a service in /lib/systemd/system/watcher.service
+# that launch this script (give executable rights : sudo chmod +x watcher.sh)
+
+WATCH_DIR1="/home/numeric/NGB/experiences"
+WATCH_DIR2="/home/numeric/NGB/sensors"
+COMMAND="parse_controller"
+LOGFILE="./datacollector.log"
+ERRORFILE="./datacollector_error.log"
+FIFO="./watcher.fifo"
+# NOWHERE="/dev/null"
+
+# fifo configuration : fifo is equivalent to logging like a pipe
+if [ ! -e $FIFO ]; then mkfifo $FIFO; fi
+
+# Clean exit : Kill parallel inotifywait process and catching infos loop
+function on_exit {
+  ./log $0 "EXIT process"
+  kill $INOTIFY_PID
+  rm $FIFO
+  exit 0
+}
+
+# Watch function that uses INOTIFY TOOLS (need to be installed)
+# Install inotify-tools before : sudo apt-get install intotify-tools
+./log "******************"
+inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %f %w' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
+# catch process id in order to kill it on exit
+INOTIFY_PID=$!
+./log $0 "SUCCESS : watcher launched : inotify pid is : $INOTIFY_PID"
+./log "******************"
+
+# Use correct exit function
+trap "on_exit" 2 3 15
+# Loop catching events stdout to launch actions
+while read date time event file directory
+do
+  ./log $0 "On $date $time, this occurred : $event $file in $directory"
+  if [ ! -d $directory/$file ] && [ ! $event = 'CREATE' ]
+  then
+    ./enqueue_job $COMMAND $directory $file
+  else
+    ./log $0 "PASS : no planned action for a directory"
+  fi
+done < $FIFO
+
+on_exit

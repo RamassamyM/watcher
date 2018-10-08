@@ -1,0 +1,14 @@
+# Copy this file in /lib/systemd/system to create a service
+# commands : sudo systemctl start/stop/restart/status watcher
+# if service is started, and the watcher is edited,
+# use : sudo systemctl daemon-reload
+
+[Unit]
+Description=Watcher service
+
+[Service]
+Type=simple
+ExecStart=/home/numeric/watcher_parser_sender/watcher
+
+[Install]
+WantedBy=multi-user.target

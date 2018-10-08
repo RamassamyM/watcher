@@ -1,0 +1,36 @@
+#!/home/numeric/.rbenv/shims/ruby
+# 2 parameters needed : filedirectory and filename
+require 'csv'
+require 'json'
+require 'time'
+
+if ARGV[0] && ARGV[1]
+  filepath = "#{ARGV[0]}/#{ARGV[1]}"
+  `../log $0 "START parsing #{filepath}"`
+  headers = "production_reference;operation_reference;date;time;plate;well;layer;job;temperature_°c;hygrometry_%;distance_um;z_auto_um;z_focus_um\r\n"
+  temp_file = File.readlines(filepath).drop(6).unshift(headers).join
+  options = { col_sep: ';', quote_char: "\"", headers: true }
+  my_csv = CSV.parse(temp_file, options)
+  logs = []
+  ts_previous_base = 0
+  keys = my_csv.headers - ['date', 'time', nil]
+  my_csv.each do |row|
+    ts_in_s = Time.parse(row['date'] + '-' + row['time']).to_i
+    ts_in_ms = ts_in_s == ts_previous_base ? ts_previous + 1 : ts_in_s * 1000
+    ts_previous_base = ts_in_s
+    ts_previous = ts_in_ms
+    log = { ts: ts_in_ms } # api needs milliseconds precision
+    values = {}
+    keys.each { |key| values[key] = row[key] unless nil? row[key] }
+    log['values'] = values
+    logs << log
+  end
+  json_log = JSON.generate(logs)
+  if json_log
+    puts json_log
+  else
+    puts 'ERROR'
+  end
+else
+  `../log $0 "ERROR parameters problem"`
+end
