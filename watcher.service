@@ -8,7 +8,7 @@ Description=Watcher service
 
 [Service]
 Type=simple
-ExecStart=/home/numeric/watcher_parser_sender/watcher
+ExecStart=/home/numeric/watch_parse_send_data/watcher
 
 [Install]
 WantedBy=multi-user.target

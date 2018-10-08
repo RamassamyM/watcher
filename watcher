@@ -33,9 +33,13 @@ function on_exit {
 inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %f %w' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
 # catch process id in order to kill it on exit
 INOTIFY_PID=$!
-./log $0 "SUCCESS : watcher launched : inotify pid is : $INOTIFY_PID"
-./log "******************"
-
+if [ ! INOTIFY_PID == "" ]
+  ./log $0 "SUCCESS : watcher launched : inotify pid is : $INOTIFY_PID"
+  ./log "******************"
+else
+  ./log $0 "ERROR : inotifywait not launched"
+  on_exit
+fi
 # Use correct exit function
 trap "on_exit" 2 3 15
 # Loop catching events stdout to launch actions

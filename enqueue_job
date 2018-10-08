@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# make it executable
 #need to install task_spooler : sudo apt-get install task-spooler
 command=$1
 args=$2
