@@ -34,6 +34,7 @@ inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_l
 # catch process id in order to kill it on exit
 INOTIFY_PID=$!
 if [ ! INOTIFY_PID == "" ]
+then
   ./log $0 "SUCCESS : watcher launched : inotify pid is : $INOTIFY_PID"
   ./log "******************"
 else
