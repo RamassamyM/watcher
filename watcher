@@ -48,8 +48,10 @@ do
   ./log $0 "On $date $time, this occurred : $event $file in $directory"
   file="${file// // }"
   directory="${directory// // }"
+  ./log $0 "CONVERT: $file in $directory"
   if [ ! -d $directory/$file ] && [ ! $event = 'CREATE' ]
   then
+    ./log $0 "START : tsp $COMMAND $directory $file"
     tsp $COMMAND "$directory" "$file" >>datacollector.log 2&>1
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
