@@ -3,6 +3,7 @@ Description=Watcher service
 
 [Service]
 Type=simple
+WorkingDirectory=/home/numeric/watch_parse_send_data
 ExecStart=/home/numeric/watch_parse_send_data/watcher
 
 [Install]
