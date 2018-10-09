@@ -25,3 +25,5 @@ then
   sudo touch /tmp/watcher_error.log
 fi
 sudo systemctl start watcher
+sudo systemctl status watcher
+tail -f /tmp/watcher.log
