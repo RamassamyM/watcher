@@ -1,0 +1,5 @@
+#!/bin/bash
+# this command can be used as ./relaod_watcher if you change watcher
+sudo systemctl stop watcher
+sudo systemctl daemon-reload
+sudo systemctl start watcher
