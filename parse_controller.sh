@@ -1,6 +1,7 @@
 #!/bin/bash
 # make it executable
 # 2 parameters needed : filedirectory and filename
+./log $@ "START Parse_controller"
 filedirectory=$1
 filename=$2
 # the parser_controller use regexp formats on filename to find the good parser to use

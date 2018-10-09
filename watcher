@@ -47,11 +47,11 @@ trap "on_exit" 2 3 15
 while read date time event file directory
 do
   ./log $0 "On $date $time, this occurred : $event $file in $directory"
-  # file="${file// // }"
-  # directory="${directory// // }"
+  file="${file// // }"
+  directory="${directory// // }"
   if [ ! -d $directory/$file ] && [ ! $event = 'CREATE' ]
   then
-    tsp $COMMAND "'$directory'" "'$file'"
+    tsp $COMMAND "$directory" "$file" >>datacollector.log 2&>1
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi
