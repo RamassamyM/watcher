@@ -12,6 +12,7 @@ WATCH_DIR1="/home/numeric/NGB/experiences"
 WATCH_DIR2="/home/numeric/NGB/sensors"
 COMMAND="parse_controller"
 FIFO="./watcher.fifo"
+ERRORFILE="/tmp/watcher.log"
 # NOWHERE="/dev/null"
 
 # fifo configuration : fifo is equivalent to logging like a pipe
