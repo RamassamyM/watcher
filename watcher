@@ -11,8 +11,6 @@
 WATCH_DIR1="/home/numeric/NGB/experiences"
 WATCH_DIR2="/home/numeric/NGB/sensors"
 COMMAND="parse_controller"
-LOGFILE="./datacollector.log"
-ERRORFILE="./datacollector_error.log"
 FIFO="./watcher.fifo"
 # NOWHERE="/dev/null"
 

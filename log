@@ -1,6 +1,6 @@
 #!/bin/bash
 # make it executable
-logfile="./datacollector.log"
+logfile="/tmp/datacollector.log"
 source=$1
 message=$2
 
