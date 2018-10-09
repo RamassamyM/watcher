@@ -10,7 +10,7 @@
 
 WATCH_DIR1="/home/numeric/NGB/experiences"
 WATCH_DIR2="/home/numeric/NGB/sensors"
-COMMAND="parse_controller"
+COMMAND="./parse_controller"
 FIFO="./watcher.fifo"
 ERRORFILE="/tmp/watcher.log"
 # NOWHERE="/dev/null"
@@ -49,7 +49,7 @@ do
   file="${file// // }"
   directory="${directory// // }"
   ./log $0 "CONVERT: $file in $directory"
-  if [ ! -d $directory/$file ] && [ ! $event = 'CREATE' ]
+  if [ ! -d "'$directory/$file'" ] && [ ! $event = 'CREATE' ]
   then
     ./log $0 "START : tsp $COMMAND $directory $file"
     tsp $COMMAND "$directory" "$file" >>datacollector.log 2&>1
