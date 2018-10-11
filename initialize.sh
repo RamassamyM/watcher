@@ -13,11 +13,11 @@ sudo chmod +x log_error
 sudo chmod +x reload_watcher
 if [ ! -e /tmp/watcher.log ]
 then
-  sudo touch /tmp/watcher.log
+  touch /tmp/watcher.log
 fi
 if [ ! -e /tmp/watcher_error.log ]
 then
-  sudo touch /tmp/watcher_error.log
+  touch /tmp/watcher_error.log
 fi
 sudo systemctl start watcher
 sudo systemctl status watcher
