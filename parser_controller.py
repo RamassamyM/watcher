@@ -120,6 +120,7 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%dT%H:%M:%S,%03d.%z',
                         level=logging.DEBUG)
     logger = logging.getLogger()
+    logger.info("Parser_controller started")
     args = sys.argv
     if len(args) >= 2:
         filepath = args[1]
