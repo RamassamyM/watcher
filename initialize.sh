@@ -8,13 +8,8 @@ sudo systemctl stop watcher
 sudo cp watcher.service /lib/systemd/system/watcher.service
 sudo systemctl daemon-reload
 sudo chmod +x watcher
-sudo chmod +x parse_controller
 sudo chmod +x log
 sudo chmod +x log_error
-sudo chmod +x parsers/parse_ngb_xplog
-sudo chmod +x parsers/parse_ngb_actionlog
-sudo chmod +x parsers/parse_ngb_sensorlog
-sudo chmod +x parsers/parse_ngb_photo
 sudo chmod +x reload_watcher
 if [ ! -e /tmp/watcher.log ]
 then

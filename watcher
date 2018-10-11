@@ -10,9 +10,9 @@
 
 WATCH_DIR1="/home/numeric/NGB/experiences"
 WATCH_DIR2="/home/numeric/NGB/sensors"
-COMMAND="./parse_controller"
 FIFO="./watcher.fifo"
-ERRORFILE="/tmp/watcher.log"
+ERRORFILE="/tmp/watcher_error.log"
+LOGFILE="/tmp/watcher.log"
 # NOWHERE="/dev/null"
 
 # fifo configuration : fifo is equivalent to logging like a pipe
@@ -45,14 +45,13 @@ trap "on_exit" 2 3 15
 # Loop catching events stdout to launch actions
 while read date time event file directory
 do
-  ./log $0 "On $date $time, this occurred : $event $file in $directory"
   file="${file// // }"
   directory="${directory// // }"
-  ./log $0 "CONVERT: $file in $directory"
+  ./log $0 "On $date $time, this occurred : $event $file in $directory"
   if [ ! -d "'$directory/$file'" ] && [ ! $event = 'CREATE' ]
   then
-    ./log $0 "START : tsp $COMMAND $directory $file"
-    tsp $COMMAND "$directory" "$file" >>datacollector.log 2&>1
+    ./log $0 "START : tsp python parser_controller.py $directory/$file "
+    tsp python parser_controller.py "'$directory/$file'"  >>$LOGFILE 2&>1
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi

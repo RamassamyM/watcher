@@ -4,4 +4,4 @@ logfile="/tmp/watcher_error.log"
 source=$1
 message=$2
 
-echo "$(date --iso-8601='seconds') [ $source ] $message" >>$logfile
+echo "$(date --iso-8601='seconds') [$source] $message" >>$logfile
