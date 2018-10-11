@@ -7,6 +7,7 @@ import csv
 import json
 import requests
 import time
+import yaml
 from datetime import datetime
 from time import sleep
 
