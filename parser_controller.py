@@ -14,7 +14,8 @@ formats = [{'name': 'actionlog', 'regexp': 'Log\.txt$', 'parser': 'self.parse_ac
            {'name': 'xplog', 'regexp': '.*\.csv$', 'parser': 'self.parse_xplog()'},
            {'name': 'photo', 'regexp': '.*\.bmp$', 'parser': 'self.parse_photo()'},
            ]
-thingsboard_device_api_token = "4RqBwjsuWjUOPUe6ReWT"
+with open('secrets.yml', 'r') as secrets:
+    thingsboard_device_api_token = yaml.load(secrets)['thingsboard_device_api_token']
 MAX_SIZE_FOR_API_POSTING = 8000
 
 class ParserController(object):
