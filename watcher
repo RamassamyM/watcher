@@ -29,7 +29,7 @@ function on_exit {
 # Watch function that uses INOTIFY TOOLS (need to be installed)
 # Install inotify-tools before : sudo apt-get install intotify-tools
 ./log "******************"
-inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %f %w' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
+inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %w%f' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
 # catch process id in order to kill it on exit
 INOTIFY_PID=$!
 if [ ! INOTIFY_PID == "" ]
@@ -43,15 +43,15 @@ fi
 # Use correct exit function
 trap "on_exit" 2 3 15
 # Loop catching events stdout to launch actions
-while read date time event file directory
+while read date time event filepath
 do
-  file="${file// // }"
-  directory="${directory// // }"
-  ./log $0 "On $date $time, this occurred : $event $file in $directory"
-  if [ ! -d "'$directory/$file'" ] && [ ! $event = 'CREATE' ]
+  # file="${file// // }"
+  # directory="${directory// // }"
+  ./log $0 "On $date $time, Event : $event $filepath"
+  if [ ! -d "'$filepath'" ] && [ ! $event = 'CREATE' ]
   then
-    ./log $0 "START : tsp python parser_controller.py $directory/$file "
-    tsp python parser_controller.py "'$directory/$file'"  >>$LOGFILE 2&>1
+    ./log $0 "START : tsp python parser_controller.py $filepath "
+    tsp python parser_controller.py "'$filepath'"  >>$LOGFILE 2&>1
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi
