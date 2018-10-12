@@ -12,7 +12,7 @@ from datetime import datetime
 from time import sleep
 
 formats = [{'name': 'actionlog', 'regexp': 'Log\.txt$', 'parser': 'self.parse_actionlog()'},
-           {'name': 'sensorlog', 'regexp': '\d{4}\-\d{2}\-\d{2}\_logNGB\.csv$', 'parser': 'self.parse_sensorlog()'},
+           {'name': 'sensorlog', 'regexp': '.*\d{4}\-\d{2}\-\d{2}\_logNGB\.csv$', 'parser': 'self.parse_sensorlog()'},
            {'name': 'xplog', 'regexp': '.*\.csv$', 'parser': 'self.parse_xplog()'},
            {'name': 'photo', 'regexp': '.*\.bmp$', 'parser': 'self.parse_photo()'},
            ]
@@ -42,11 +42,31 @@ class ParserController(object):
             logger.warning("Abort sending to Thingsboard")
 
     # def parse_actionlog(self):
-    #     # TODO
-    #
-    #
-    # def parse_sensorlog(self):
-    #     # TODO
+        #     # TODO
+
+
+    def parse_sensorlog(self):
+        logger.debug("START parse_sensorlog")
+        datematch = re.match('.*(?P<date>\d{4}-\d{2}-\d{2}).*', self.filepath)
+        with open(self.filepath, newline='') as csvfile:
+            filereader = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
+            logs = []
+            logger.debug("START parsing csv file")
+            for row in filereader:
+                ts_in_ms = datetime.strptime(datematch.group('date') + ' ' + row['Heure'], '%Y-%m-%d %H:%M:%S').timestamp() * 1000
+                log = { 'ts': ts_in_ms }
+                values = {}
+                for key, value in row.items():
+                        if key != 'Heure' and key:
+                            values[key] = value
+                log['values'] = values
+                logs.append(log)
+        try:
+            pretty_json = str(json.dumps(logs, sort_keys=True, indent=4))
+            logger.debug("json generated is :\n%s", pretty_json[0:400] + '\n...\n...\n' + pretty_json[-400:])
+            self.parsed_log = logs
+        except (TypeError, OverflowError) as e:
+            logger.critical("Could not convert in json the logs : %s", e)
 
     def parse_xplog(self):
         logger.debug("START parse_xplog")
