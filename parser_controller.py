@@ -29,7 +29,7 @@ class ParserController(object):
 
     def identify_format_and_parse(self):
         for format in formats:
-            logger.debug("Test formats : %s" % format['name'])
+            logger.debug("Test formats : %s on %s", format['name'], self.filepath)
             if re.match(format['regexp'], self.filepath):
                 logger.debug("File format is %s", format['name'])
                 exec(format['parser'])
