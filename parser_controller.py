@@ -129,7 +129,7 @@ if __name__ == '__main__':
     args = sys.argv
     if len(args) >= 2:
         filepath = args[1]
-        regexp_matching = re.match('\'?(.*)\'?', filepath)
+        regexp_matching = re.match('^\'?(.*)\'?$', filepath)
         filepath = regexp_matching.group(1)
         logger.debug("Path to file to parse and send : %s", filepath)
         p = ParserController(filepath)
