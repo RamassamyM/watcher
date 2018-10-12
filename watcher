@@ -52,6 +52,7 @@ do
   then
     source activate watcher_env # for activating the right conda python env
     ./log $0 "Path i s:   $(echo $PATH)"
+    ./log $0 "Conda activated env is : $(conda info --envs | grep '*')"
     # sudo tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : sudo tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching sudo tsp python...")
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
