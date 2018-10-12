@@ -46,6 +46,7 @@ class ParserController(object):
     #     # TODO
 
     def parse_xplog(self):
+        logger.info("START parse_xplog")
         with open(self.filepath) as csvfile:
             nb_of_unuseful_lines = 6
             headers = ['production_reference', 'operation_reference', 'date',
