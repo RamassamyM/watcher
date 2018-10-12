@@ -51,7 +51,7 @@ do
   if [ ! -d "'$filepath'" ] && [ ! $event = 'CREATE' ]
   then
     source activate watcher_env # for activating the right conda python env
-    conda info --envs. >>$LOGFILE
+    conda info --envs >>$LOGFILE 2&>1
     sudo tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : sudo tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launchin sudo tsp python...")
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
