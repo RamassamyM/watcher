@@ -52,7 +52,7 @@ do
   then
     ./log $0 "Path is: $(echo $PATH)"
     ./log $0 "which python : $(which python)"
-    ./log $0 ""$(python --version)"
+    ./log $0 "$(python --version)"
 
     sudo tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : sudo tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching sudo tsp python...")
   else
