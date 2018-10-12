@@ -11,10 +11,10 @@ import yaml
 from datetime import datetime
 from time import sleep
 
-formats = [{'name': 'actionlog', 'regexp': '\'?Log\.txt\'?$', 'parser': 'self.parse_actionlog()'},
-           {'name': 'sensorlog', 'regexp': '\'?\d{4}\-\d{2}\-\d{2}\_logNGB\.csv\'?$', 'parser': 'self.parse_sensorlog()'},
-           {'name': 'xplog', 'regexp': '\'?.*\.csv\'?$', 'parser': 'self.parse_xplog()'},
-           {'name': 'photo', 'regexp': '\'?.*\.bmp\'?$', 'parser': 'self.parse_photo()'},
+formats = [{'name': 'actionlog', 'regexp': 'Log\.txt$', 'parser': 'self.parse_actionlog()'},
+           {'name': 'sensorlog', 'regexp': '\d{4}\-\d{2}\-\d{2}\_logNGB\.csv$', 'parser': 'self.parse_sensorlog()'},
+           {'name': 'xplog', 'regexp': '.*\.csv$', 'parser': 'self.parse_xplog()'},
+           {'name': 'photo', 'regexp': '.*\.bmp$', 'parser': 'self.parse_photo()'},
            ]
 with open('secrets.yml', 'r') as secrets:
     thingsboard_device_api_token = yaml.load(secrets)['thingsboard_device_api_token']
@@ -49,7 +49,7 @@ class ParserController(object):
     #     # TODO
 
     def parse_xplog(self):
-        logger.info("START parse_xplog")
+        logger.debug("START parse_xplog")
         with open(self.filepath) as csvfile:
             nb_of_unuseful_lines = 6
             headers = ['production_reference', 'operation_reference', 'date',
@@ -60,6 +60,7 @@ class ParserController(object):
             logs = []
             ts_previous_base = 0
             ts_previous = 0
+            logger.debug("START parsing csv file")
             for index, row in enumerate(filereader, start=1):
                 if index > nb_of_unuseful_lines:
                     ts_in_s = datetime.strptime(row[2] + ' ' + row[3], '%Y-%m-%d %H:%M').timestamp()
@@ -82,7 +83,7 @@ class ParserController(object):
             logger.debug("json generated is :\n%s", pretty_json[0:400] + '\n...\n...\n' + pretty_json[-400:])
             self.parsed_log = logs
         except (TypeError, OverflowError):
-           logger.critical("Could not convert in json the logs")
+            logger.critical("Could not convert in json the logs")
 
     # def parse_photo(self):
     #     # TODO
@@ -128,6 +129,8 @@ if __name__ == '__main__':
     args = sys.argv
     if len(args) >= 2:
         filepath = args[1]
+        re.match('\'?(.*)\'?', filepath)
+        filepath = _.group(1)
         logger.debug("Path to file to parse and send : %s", filepath)
         p = ParserController(filepath)
         p.identify_format_and_parse()
