@@ -29,10 +29,13 @@ class ParserController(object):
 
     def identify_format_and_parse(self):
         for format in formats:
+            logger.debug("Test formats : %s" % format['name'])
             if re.match(format['regexp'], self.filepath):
                 logger.debug("File format is %s", format['name'])
                 exec(format['parser'])
                 break
+            else:
+                logger.debug("Format %s not recognized" % format['name'])
         if self.parsed_log:
             self.send_json_to_thingsboard()
         else:
@@ -121,7 +124,7 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%dT%H:%M:%S,%03d.%z',
                         level=logging.DEBUG)
     logger = logging.getLogger()
-    logger.info("Parser_controller started")
+    logger.debug("Parser_controller started")
     args = sys.argv
     if len(args) >= 2:
         filepath = args[1]
