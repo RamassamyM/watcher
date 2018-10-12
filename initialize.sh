@@ -7,10 +7,10 @@
 sudo systemctl stop watcher
 sudo cp watcher.service /lib/systemd/system/watcher.service
 sudo systemctl daemon-reload
-sudo chmod +x watcher
-sudo chmod +x log
-sudo chmod +x log_error
-sudo chmod +x reload_watcher
+chmod +x watcher
+chmod +x log
+chmod +x log_error
+chmod +x reload_watcher
 if [ ! -e /tmp/watcher.log ]
 then
   touch /tmp/watcher.log
