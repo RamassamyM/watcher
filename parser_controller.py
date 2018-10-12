@@ -11,10 +11,10 @@ import yaml
 from datetime import datetime
 from time import sleep
 
-formats = [{'name': 'actionlog', 'regexp': 'Log\.txt$', 'parser': 'self.parse_actionlog()'},
-           {'name': 'sensorlog', 'regexp': '\d{4}\-\d{2}\-\d{2}\_logNGB\.csv$', 'parser': 'self.parse_sensorlog()'},
-           {'name': 'xplog', 'regexp': '.*\.csv$', 'parser': 'self.parse_xplog()'},
-           {'name': 'photo', 'regexp': '.*\.bmp$', 'parser': 'self.parse_photo()'},
+formats = [{'name': 'actionlog', 'regexp': '\'?Log\.txt\'?$', 'parser': 'self.parse_actionlog()'},
+           {'name': 'sensorlog', 'regexp': '\'?\d{4}\-\d{2}\-\d{2}\_logNGB\.csv\'?$', 'parser': 'self.parse_sensorlog()'},
+           {'name': 'xplog', 'regexp': '\'?.*\.csv\'?$', 'parser': 'self.parse_xplog()'},
+           {'name': 'photo', 'regexp': '\'?.*\.bmp\'?$', 'parser': 'self.parse_photo()'},
            ]
 with open('secrets.yml', 'r') as secrets:
     thingsboard_device_api_token = yaml.load(secrets)['thingsboard_device_api_token']
@@ -51,7 +51,7 @@ class ParserController(object):
     def parse_xplog(self):
         logger.info("START parse_xplog")
         with open(self.filepath) as csvfile:
-            nb_of_unuseful_lines = 6
+            nb_of_unuseful_lines = 6python parser_controller.py /home/numeric/NGB/experiences/18PKN16-2_PO04.csv
             headers = ['production_reference', 'operation_reference', 'date',
                        'time', 'plate', 'well', 'layer', 'job',
                        'temperature_°c', 'hygrometry_%', 'distance_um',

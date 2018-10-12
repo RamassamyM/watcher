@@ -52,7 +52,7 @@ do
   then
     ./log $0 "Path is: $(echo $PATH)"
     ./log $0 "which python : $(which python)"
-    tsp python parser_controller.py "$filepath"  && (./log $0 "START : tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching tsp python...")
+    sudo tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching tsp python...")
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi
