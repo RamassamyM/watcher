@@ -51,7 +51,7 @@ class ParserController(object):
     def parse_xplog(self):
         logger.info("START parse_xplog")
         with open(self.filepath) as csvfile:
-            nb_of_unuseful_lines = 6python parser_controller.py /home/numeric/NGB/experiences/18PKN16-2_PO04.csv
+            nb_of_unuseful_lines = python parser_controller.py /home/numeric/NGB/experiences/18PKN16-2_PO04.csv
             headers = ['production_reference', 'operation_reference', 'date',
                        'time', 'plate', 'well', 'layer', 'job',
                        'temperature_°c', 'hygrometry_%', 'distance_um',
