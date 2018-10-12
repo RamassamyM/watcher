@@ -3,7 +3,7 @@ Description=Watcher service
 
 [Service]
 Type=simple
-User=numeric
+User=root
 WorkingDirectory=/home/numeric/watch_parse_send_data
 ExecStart=/bin/bash -c 'PATH=/home/numeric/miniconda3/envs/watcher_env/bin:/home/numeric/miniconda3/bin:$PATH exec /home/numeric/watch_parse_send_data/watcher'
 
