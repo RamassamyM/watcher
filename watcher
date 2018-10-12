@@ -50,9 +50,9 @@ do
   ./log $0 "On $date $time, Event : $event $filepath"
   if [ ! -d "'$filepath'" ] && [ ! $event = 'CREATE' ]
   then
-    sudo PATH=$PATH conda activate watcher_env # for activating the right conda python env
-    sudo PATH=$PATH ./log $0 "Path is: $(echo $PATH)"
-    sudo PATH=$PATH tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : sudo tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching sudo tsp python...")
+    # sudo PATH=$PATH conda activate watcher_env # for activating the right conda python env
+    sudo "PATH=/home/numeric/miniconda3/envs/watcher_env/bin:/home/numeric/miniconda3/bin:$PATH" ./log $0 "Path is: $(echo $PATH)"
+    # sudo PATH=$PATH tsp python parser_controller.py "'$filepath'"  && (./log $0 "START : sudo tsp python parser_controller.py $filepath ") || (./log $0 "ERROR while launching sudo tsp python...")
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi
