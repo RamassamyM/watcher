@@ -32,10 +32,13 @@ class ParserController(object):
             logger.debug("Test formats : %s on %s", format['name'], self.filepath)
             if re.match(format['regexp'], self.filepath):
                 logger.debug("File format is %s", format['name'])
-                exec(format['parser'])
+                try:
+                    exec(format['parser'])
+                except Exception as e:
+                    logger.critical("Error when trying to execute parser %s", format['parser'])
                 break
             else:
-                logger.debug("Format %s not recognized" % format['name'])
+                logger.debug("Format %s not recognized", format['name'])
         if self.parsed_log:
             self.send_json_to_thingsboard()
         else:
