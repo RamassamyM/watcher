@@ -35,7 +35,7 @@ class ParserController(object):
                 try:
                     exec(format['parser'])
                 except Exception as e:
-                    logger.critical("Error when trying to execute parser %s", format['parser'])
+                    logger.critical("Error : %s", e)
                 break
             else:
                 logger.debug("Format %s not recognized", format['name'])
