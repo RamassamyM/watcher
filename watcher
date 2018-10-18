@@ -29,7 +29,7 @@ function on_exit {
 # Watch function that uses INOTIFY TOOLS (need to be installed)
 # Install inotify-tools before : sudo apt-get install intotify-tools
 ./log "******************"
-inotifywait -m -r -e create -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %w%f' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
+inotifywait -m -r -e create -e moved_to -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %w%f' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
 # catch process id in order to kill it on exit
 INOTIFY_PID=$!
 if [ ! INOTIFY_PID == "" ]
@@ -50,9 +50,9 @@ do
   ./log $0 "On $date $time, Event : $event $filepath"
   if [ ! -d "'$filepath'" ] && [ ! $event = 'CREATE' ]
   then
-    source activate watcher_env && ./log $0 "watcher_env successfully activated for python and packages"
-    ./log $0 "Path is: $(echo $PATH)"
-    ./log $0 "which python : $(which python)"
+    source activate watcher_env # && ./log $0 "watcher_env successfully activated for python and packages"
+    # ./log $0 "Path is: $(echo $PATH)"
+    # ./log $0 "which python : $(which python)"
     (tsp python parser_controller.py "'$filepath'")  && (./log $0 "START : tsp sudo python parser_controller.py $filepath ") || (./log $0 "ERROR while launching tsp python...")
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
