@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-import logging
+# need a file called logger.py in same directory
+from logger import initialize_logger
 import re
 import csv
 import json
@@ -20,6 +21,9 @@ with open('secrets.yml', 'r') as secrets:
     thingsboard_device_api_token = yaml.load(secrets)['thingsboard_device_api_token']
 MAX_SIZE_FOR_API_POSTING = 8000
 
+# Configuring logging system
+logger = initialize_logger()
+
 class ParserController(object):
     """Controller to dispatch file to good parser and to good transmitter"""
 
@@ -29,20 +33,21 @@ class ParserController(object):
 
     def identify_format_and_parse(self):
         for format in formats:
-            logger.debug("Test formats : %s on %s", format['name'], self.filepath)
+            # logger.debug("Test formats : %s on %s", format['name'], self.filepath)
             if re.match(format['regexp'], self.filepath):
-                logger.debug("File format is %s", format['name'])
+                logger.debug("RIGHT Format %s for %s", format['name'], self.filepath)
                 try:
                     exec(format['parser'])
                 except Exception as e:
-                    logger.critical("Error : %s", e)
+                    logger.debug("Error : %s", e)
                 break
             else:
-                logger.debug("Format %s not recognized", format['name'])
+                logger.debug("WRONG Format %s for %s", format['name'], self.filepath)
         if self.parsed_log:
+            logger.debug("Send to thingsboard : %s", self.filepath)
             self.send_json_to_thingsboard()
         else:
-            logger.warning("Abort sending to Thingsboard")
+            logger.error("ABORT sending to Thingsboard : %s", self.filepath)
 
     # def parse_actionlog(self):
         #     # TODO
@@ -51,7 +56,7 @@ class ParserController(object):
     def parse_sensorlog(self):
         logger.debug("START parse_sensorlog")
         datematch = re.match('.*(?P<date>\d{4}-\d{2}-\d{2}).*', self.filepath)
-        with open(self.filepath, newline='') as csvfile:
+        with open(self.filepath, newline='', 'r', encoding='ISO-8859-1', errors='ignore') as csvfile:
             filereader = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
             logs = []
             logger.debug("START parsing csv file")
@@ -69,11 +74,11 @@ class ParserController(object):
             logger.debug("json generated is :\n%s", pretty_json[0:400] + '\n...\n...\n' + pretty_json[-400:])
             self.parsed_log = logs
         except (TypeError, OverflowError) as e:
-            logger.critical("Could not convert in json the logs : %s", e)
+            logger.debug("Could not convert in json the logs : %s", e)
 
     def parse_xplog(self):
         logger.debug("START parse_xplog")
-        with open(self.filepath) as csvfile:
+        with open(self.filepath, 'r', encoding='ISO-8859-1', errors='ignore') as csvfile:
             nb_of_unuseful_lines = 6
             headers = ['production_reference', 'operation_reference', 'date',
                        'time', 'plate', 'well', 'layer', 'job',
@@ -106,7 +111,7 @@ class ParserController(object):
             logger.debug("json generated is :\n%s", pretty_json[0:400] + '\n...\n...\n' + pretty_json[-400:])
             self.parsed_log = logs
         except (TypeError, OverflowError):
-            logger.critical("Could not convert in json the logs")
+            logger.debug("Could not convert in json the logs")
 
     # def parse_photo(self):
     #     # TODO
@@ -122,6 +127,7 @@ class ParserController(object):
         max_nb_elts_by_slice = int(round(total_payload_elements / nb_of_slices))
         payloads = [parsed_log[x:x+max_nb_elts_by_slice] for x in range(0, total_payload_elements, max_nb_elts_by_slice)]
         logger.debug("Will send data in %d slices", nb_of_slices + 1)
+        success_status = True #initialize status
         for index, each_payload in enumerate(payloads):
             for x in range(3):
                 logger.debug("Trying to send payload n°%d among %d", index + 1, nb_of_slices + 1)
@@ -129,9 +135,16 @@ class ParserController(object):
                 sleep(2)
                 if status:
                     break
+                elif x == 2:
+                    logger.error("FAIL posting to API : filepath %s ; payload %d / %d : %s", self.filepath, index + 1, nb_of_slices + 1, each_payload)
+                    success = False
                 else:
-                    logger.warning("Attempt to post to api failed, may retry")
+                    logger.debug("Attempt to post to api failed, may retry")
         logger.debug("Finished sending to Thingsboard")
+        if success:
+            logger.warning("SUCCESS : send %s", self.filepath)
+        else:
+            logger.error("ERROR : send %s", self.filepath)
 
     def post_api(self, api_url, payload):
         r = requests.post(api_url, json=payload)
@@ -139,15 +152,10 @@ class ParserController(object):
         if status:
             logger.debug('Api response status : ' + str(r.status_code) + ' - ' + r.text[:300])
         else:
-            logger.critical('Api response status : ' + str(r.status_code) + ' - ' + str(r.reason) + r.text[:300] + str(r.headers))
+            logger.debug('Api response status : ' + str(r.status_code) + ' - ' + str(r.reason) + r.text[:300] + str(r.headers))
         return status
 
 if __name__ == '__main__':
-    logging.basicConfig(filename='/tmp/watcher.log',
-                        format='%(asctime)s\t%(levelname)s  -- P_%(process)d:%(filename)s:%(funcName)s:%(lineno)s \t-- %(message)s',
-                        datefmt='%Y-%m-%dT%H:%M:%S,%03d.%z',
-                        level=logging.DEBUG)
-    logger = logging.getLogger()
     logger.debug("Parser_controller started")
     args = sys.argv
     if len(args) >= 2:
@@ -155,8 +163,8 @@ if __name__ == '__main__':
         regexp_matching = re.match('^\'(.*)\'$', filepath)
         if regexp_matching:
             filepath = regexp_matching.group(1)
-        logger.debug("Path to file to parse and send : %s", filepath)
+        logger.debug("File to parse and send : %s", filepath)
         p = ParserController(filepath)
         p.identify_format_and_parse()
     else:
-        logger.critical('Error 1 parameter needed : filepath')
+        logger.debug('Error 1 parameter needed : filepath')
