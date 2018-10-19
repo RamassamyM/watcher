@@ -1,3 +1,8 @@
+# copy this file to /etc/systemd/system/watcher.service or /lib/systemd/system/watcher.service
+# then use service with : (sudo) systemctl start(or stop or restart) watcher
+# if you change this file type : sudo systemctl daemon-reload
+# if your watcher use conda and python, you need to update the $PATH here to be sure the commands of conda will be found.
+
 [Unit]
 Description=Watcher service
 
@@ -5,7 +10,7 @@ Description=Watcher service
 Type=simple
 User=root
 WorkingDirectory=/home/numeric/watch_parse_send_data
-ExecStart=/bin/bash -c 'PATH=/home/numeric/miniconda3/envs/watcher_env/bin:/home/numeric/miniconda3/bin:$PATH exec /home/numeric/watch_parse_send_data/watcher'
+ExecStart=/bin/bash -c 'PATH=/home/numeric/miniconda3/envs/watcher_env/bin:/home/numeric/miniconda3/bin:$PATH exec /your/path/to/watcher'
 
 [Install]
 WantedBy=multi-user.target

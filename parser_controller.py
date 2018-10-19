@@ -12,13 +12,9 @@ import yaml
 from datetime import datetime
 from time import sleep
 
-formats = [{'name': 'actionlog', 'regexp': 'Log\.txt$', 'parser': 'self.parse_actionlog()'},
-           {'name': 'sensorlog', 'regexp': '.*\d{4}\-\d{2}\-\d{2}\_logNGB\.csv$', 'parser': 'self.parse_sensorlog()'},
-           {'name': 'xplog', 'regexp': '.*\.csv$', 'parser': 'self.parse_xplog()'},
-           {'name': 'photo', 'regexp': '.*\.bmp$', 'parser': 'self.parse_photo()'},
-           ]
+formats = [{'name': 'myparser1', 'regexp': '.*\d{4}\-\d{2}\-\d{2}\_log\.csv$', 'parser': 'self.myparser1'},]
 with open('secrets.yml', 'r') as secrets:
-    thingsboard_device_api_token = yaml.load(secrets)['thingsboard_device_api_token']
+    api_token = yaml.load(secrets)['api_token']
 MAX_SIZE_FOR_API_POSTING = 8000
 
 # Configuring logging system
@@ -44,17 +40,13 @@ class ParserController(object):
             else:
                 logger.debug("WRONG Format %s for %s", format['name'], self.filepath)
         if self.parsed_log:
-            logger.debug("Send to thingsboard : %s", self.filepath)
-            self.send_json_to_thingsboard()
+            logger.debug("Send to API : %s", self.filepath)
+            self.send_json_to_API()
         else:
-            logger.error("ABORT sending to Thingsboard : %s", self.filepath)
+            logger.error("ABORT sending to API : %s", self.filepath)
 
-    # def parse_actionlog(self):
-        #     # TODO
-
-
-    def parse_sensorlog(self):
-        logger.debug("START parse_sensorlog")
+    def myparser1(self):
+        logger.debug("START parser1")
         datematch = re.match('.*(?P<date>\d{4}-\d{2}-\d{2}).*', self.filepath)
         with open(self.filepath, newline='', 'r', encoding='ISO-8859-1', errors='ignore') as csvfile:
             filereader = csv.DictReader(csvfile, delimiter=';', quotechar="\"")
@@ -76,51 +68,11 @@ class ParserController(object):
         except (TypeError, OverflowError) as e:
             logger.debug("Could not convert in json the logs : %s", e)
 
-    def parse_xplog(self):
-        logger.debug("START parse_xplog")
-        with open(self.filepath, 'r', encoding='ISO-8859-1', errors='ignore') as csvfile:
-            nb_of_unuseful_lines = 6
-            headers = ['production_reference', 'operation_reference', 'date',
-                       'time', 'plate', 'well', 'layer', 'job',
-                       'temperature_°c', 'hygrometry_%', 'distance_um',
-                       'z_auto_um', 'z_focus_um']
-            filereader = csv.reader(csvfile, delimiter=';', quotechar="\"")
-            logs = []
-            ts_previous_base = 0
-            ts_previous = 0
-            logger.debug("START parsing csv file")
-            for index, row in enumerate(filereader, start=1):
-                if index > nb_of_unuseful_lines:
-                    ts_in_s = datetime.strptime(row[2] + ' ' + row[3], '%Y-%m-%d %H:%M').timestamp()
-                    ts_in_ms = ts_previous + 1 if ts_in_s == ts_previous_base else ts_in_s * 1000
-                    ts_previous_base = ts_in_s
-                    ts_previous = ts_in_ms
-                    log = { 'ts': ts_in_ms }
-                    values = {}
-                    for num, header in enumerate(headers):
-                        try:
-                            # we do not want to log a date and time value and empty value
-                            if row[num] and row[num].strip() and num != 2 and num != 3 :
-                                values[header] = row[num]
-                        except IndexError:
-                            pass
-                    log['values'] = values
-                    logs.append(log)
-        try:
-            pretty_json = str(json.dumps(logs, sort_keys=True, indent=4))
-            logger.debug("json generated is :\n%s", pretty_json[0:400] + '\n...\n...\n' + pretty_json[-400:])
-            self.parsed_log = logs
-        except (TypeError, OverflowError):
-            logger.debug("Could not convert in json the logs")
-
-    # def parse_photo(self):
-    #     # TODO
-
-    def send_json_to_thingsboard(self):
-        logger.debug("Begin transfer json to thingsboard")
+    def send_json_to_API(self):
+        logger.debug("Begin transfer json to API")
         parsed_log = self.parsed_log
         payload = json.dumps(parsed_log)
-        api_url = "http://192.168.0.216:8080/api/v1/%s/telemetry" %thingsboard_device_api_token
+        api_url = "url/to/api/%s" %thingsboard_device_api_token
         total_payload_size = len(payload)
         total_payload_elements = len(parsed_log)
         nb_of_slices = total_payload_size / MAX_SIZE_FOR_API_POSTING
@@ -139,8 +91,8 @@ class ParserController(object):
                     logger.error("FAIL posting to API : filepath %s ; payload %d / %d : %s", self.filepath, index + 1, nb_of_slices + 1, each_payload)
                     success = False
                 else:
-                    logger.debug("Attempt to post to api failed, may retry")
-        logger.debug("Finished sending to Thingsboard")
+                    logger.debug("Attempt to post to API failed, may retry")
+        logger.debug("Finished sending to API")
         if success:
             logger.warning("SUCCESS : send %s", self.filepath)
         else:
@@ -150,9 +102,9 @@ class ParserController(object):
         r = requests.post(api_url, json=payload)
         status = r.status_code == requests.codes.ok
         if status:
-            logger.debug('Api response status : ' + str(r.status_code) + ' - ' + r.text[:300])
+            logger.debug('API response status : ' + str(r.status_code) + ' - ' + r.text[:300])
         else:
-            logger.debug('Api response status : ' + str(r.status_code) + ' - ' + str(r.reason) + r.text[:300] + str(r.headers))
+            logger.debug('API response status : ' + str(r.status_code) + ' - ' + str(r.reason) + r.text[:300] + str(r.headers))
         return status
 
 if __name__ == '__main__':
@@ -160,7 +112,7 @@ if __name__ == '__main__':
     args = sys.argv
     if len(args) >= 2:
         filepath = args[1]
-        regexp_matching = re.match('^\'(.*)\'$', filepath)
+        regexp_matching = re.match('^\'(.*)\'$', filepath) # clean filepath
         if regexp_matching:
             filepath = regexp_matching.group(1)
         logger.debug("File to parse and send : %s", filepath)
