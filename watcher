@@ -6,11 +6,14 @@
 # directories and files configuration
 
 # create a service in /lib/systemd/system/watcher.service
+# or in /etc/systemd/system/watcher.service
 # that launch this script (give executable rights : sudo chmod +x watcher.sh)
 
-WATCH_DIR1="/home/numeric/NGB/experiences"
-WATCH_DIR2="/home/numeric/NGB/sensors"
+WATCH_DIR1="/path/to/dir1"
+WATCH_DIR2="/path/to/dir2"
+# you can have as many dirs as you want
 FIFO="./watcher.fifo"
+# use a fifo file to read output of inotifywait
 ERRORFILE="/tmp/watcher_error.log"
 LOGFILE="/tmp/watcher.log"
 # NOWHERE="/dev/null"
@@ -28,8 +31,10 @@ function on_exit {
 
 # Watch function that uses INOTIFY TOOLS (need to be installed)
 # Install inotify-tools before : sudo apt-get install intotify-tools
+# not : we use here a script for logging but there is better scripts for logging using logger of linux
 ./log "******************"
 inotifywait -m -r -e create -e moved_to -e close_write --exclude ".*\.(swp|ffs|ffs_tmp|ffs_lock)(\.*)+$" --timefmt '%Y/%m/%d %H:%M:%S' --format '%T %e %w%f' $WATCH_DIR1 $WATCH_DIR2 >$FIFO 2>>$ERRORFILE &
+# decide what events to watch (see the doc) and the files to exclude
 # catch process id in order to kill it on exit
 INOTIFY_PID=$!
 if [ ! INOTIFY_PID == "" ]
@@ -45,15 +50,18 @@ trap "on_exit" 2 3 15
 # Loop catching events stdout to launch actions
 while read date time event filepath
 do
+  # you can clean the names with spaces in it with these commands :
   # file="${file// // }"
   # directory="${directory// // }"
   ./log $0 "On $date $time, Event : $event $filepath"
   if [ ! -d "'$filepath'" ] && [ ! $event = 'CREATE' ]
   then
+    # if you use python with conda for managing environments, you have to first activate the env here befor launching tsp
     source activate watcher_env # && ./log $0 "watcher_env successfully activated for python and packages"
     # ./log $0 "Path is: $(echo $PATH)"
     # ./log $0 "which python : $(which python)"
     (tsp python parser_controller.py "'$filepath'")  && (./log $0 "START : tsp sudo python parser_controller.py $filepath ") || (./log $0 "ERROR while launching tsp python...")
+    # you can use any command after tsp
   else
     ./log $0 "PASS : no planned action for a directory or on CREATE event (waiting for CLOSE event)"
   fi

@@ -9,8 +9,8 @@ Description=Watcher service
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/home/numeric/watch_parse_send_data
-ExecStart=/bin/bash -c 'PATH=/home/numeric/miniconda3/envs/watcher_env/bin:/home/numeric/miniconda3/bin:$PATH exec /your/path/to/watcher'
+WorkingDirectory=path/to/
+ExecStart=/bin/bash -c 'PATH=/path/to//miniconda3/envs/watcher_env/bin:/path/to//miniconda3/bin:$PATH exec /your/path/to/watcher'
 
 [Install]
 WantedBy=multi-user.target
